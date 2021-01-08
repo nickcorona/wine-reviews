@@ -1,6 +1,6 @@
-### Predict smart grid stability
+### Predict wine reviews
 
-Achieved 99.63% validation accuracy predicting the stability of smart grids.
+Achieved __ validation __.
 
 Most important features included:
 ![feature importance](figures/feature_importance.png)
