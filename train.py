@@ -5,8 +5,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from category_encoders import OneHotEncoder, OrdinalEncoder  # sometimes needed
-from dirty_cat import SimilarityEncoder, TargetEncoder
+from category_encoders import OneHotEncoder, OrdinalEncoder  # sometimes appropriate
+from dirty_cat import (
+    SimilarityEncoder,
+)  # for encoding "dirty" categoricals; often outperforms one-hot encoding
+from dirty_cat import TargetEncoder  # sometimes worth trying
 from sklearn.model_selection import train_test_split
 from statsmodels.nonparametric.smoothers_lowess import lowess
 
@@ -43,7 +46,7 @@ if ENCODE:
         "variety",
         "region_2",
     ]
-    enc = SimilarityEncoder(similarity="ngram", categories="k-means", n_prototypes=40)
+    enc = SimilarityEncoder(similarity="ngram", categories="k-means", n_prototypes=300)
     for col in encode_columns:
         transformed_values = enc.fit_transform(X[col].values.reshape(-1, 1))
         transformed_values = pd.DataFrame(transformed_values, index=X.index)

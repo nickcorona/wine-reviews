@@ -150,6 +150,5 @@ cython_debug/
 # data files
 *.zip
 *.csv
-*.xlsx
 
 models/*
