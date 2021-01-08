@@ -13,7 +13,7 @@ from statsmodels.nonparametric.smoothers_lowess import lowess
 from helpers import encode_dates, loguniform
 
 df = pd.read_csv(
-    r"data\smart_grid_stability_augmented.csv",
+    r"data\winemag-data-130k-v2.csv",
     parse_dates=[],
     index_col=[],
 )
@@ -24,18 +24,26 @@ print(
     .sort_values(["dtype", "proportion unique"])
 )
 
-y = df["stabf"].replace(["unstable", "stable"], [0, 1])
+y = df["points"]
 X = df.drop(
-    ["stabf", "stab"],
+    ["points", "Unnamed: 0"],
     axis=1,
 )
 
 X.info()
 
-ENCODE = False
+ENCODE = True
 if ENCODE:
-    encode_columns = []
-    enc = SimilarityEncoder(similarity="ngram", categories="k-means", n_prototypes=5)
+    encode_columns = [
+        "description",
+        "title",
+        "designation",
+        "winery",
+        "region_1",
+        "variety",
+        "region_2",
+    ]
+    enc = SimilarityEncoder(similarity="ngram", categories="k-means", n_prototypes=40)
     for col in encode_columns:
         transformed_values = enc.fit_transform(X[col].values.reshape(-1, 1))
         transformed_values = pd.DataFrame(transformed_values, index=X.index)
@@ -45,7 +53,7 @@ if ENCODE:
         X = pd.concat([X, transformed_values], axis=1)
         X = X.drop(col, axis=1)
 
-CATEGORIZE = False
+CATEGORIZE = True
 if CATEGORIZE:
     obj_cols = X.select_dtypes("object").columns
     X[obj_cols] = X[obj_cols].astype("category")
@@ -63,8 +71,8 @@ Xs, ys = Xt.loc[sample_idx], yt.loc[sample_idx]
 ds = lgb.Dataset(Xs, ys)
 dv = lgb.Dataset(Xv, yv, free_raw_data=False)
 
-OBJECTIVE = "binary"
-METRIC = "binary_logloss"
+OBJECTIVE = "regression"
+METRIC = "rmse"
 MAXIMIZE = False
 EARLY_STOPPING_ROUNDS = 10
 MAX_ROUNDS = 10000
@@ -74,8 +82,8 @@ params = {
     "objective": OBJECTIVE,
     "metric": METRIC,
     "verbose": -1,
-    "num_classes": 1,
-    "n_jobs": 6,
+    # "num_classes": 1,  # applicable for classification
+    "n_jobs": 6,  # 6 scores on my system
 }
 
 model = lgb.train(
