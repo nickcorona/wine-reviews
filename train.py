@@ -62,7 +62,7 @@ if CATEGORIZE:
     X[obj_cols] = X[obj_cols].astype("category")
 
 SEED = 0
-SAMPLE_SIZE = 5000
+SAMPLE_SIZE = 10000
 
 Xt, Xv, yt, yv = train_test_split(
     X, y, random_state=SEED
@@ -91,26 +91,26 @@ params = {
 
 model = lgb.train(
     params,
-    dt,
-    valid_sets=[dt, dv],
+    ds,
+    valid_sets=[ds, dv],
     valid_names=["training", "valid"],
     num_boost_round=MAX_ROUNDS,
     early_stopping_rounds=EARLY_STOPPING_ROUNDS,
     verbose_eval=REPORT_ROUNDS,
 )
 
-lgb.plot_importance(model, grid=False, importance_type="gain")
+lgb.plot_importance(model, grid=False, max_num_features=20, importance_type="gain")
 plt.show()
 
 best_etas = {"learning_rate": [], "score": []}
 
 for _ in range(30):
-    eta = loguniform(-1, 0)
+    eta = loguniform(-3, 0)
     best_etas["learning_rate"].append(eta)
     params["learning_rate"] = eta
     model = lgb.train(
         params,
-        dt,
+        ds,
         valid_sets=[ds, dv],
         valid_names=["training", "valid"],
         num_boost_round=MAX_ROUNDS,
